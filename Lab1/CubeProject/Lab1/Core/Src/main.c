@@ -64,24 +64,73 @@ int main(void) {
 	HAL_Init(); // Reset of all peripherals, init the Flash and Systick
 	SystemClock_Config(); //Configure the system clock
 	
-	/* This example uses HAL library calls to control
-	the GPIOC peripheral. You’ll be redoing this code
-	with hardware register access. */
-	__HAL_RCC_GPIOC_CLK_ENABLE(); // Enable the GPIOC clock in the RCC
+	//Enable GPIOC and GPIOA clocks
+	RCC->AHBENR |= (RCC_AHBENR_GPIOCEN | RCC_AHBENR_GPIOAEN);
 	
-	// Set up a configuration struct to pass to the initialization function
-	GPIO_InitTypeDef initStr = {GPIO_PIN_8 | GPIO_PIN_9,
-	GPIO_MODE_OUTPUT_PP,
-	GPIO_SPEED_FREQ_LOW,
-	GPIO_NOPULL};
-	HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Start PC8 high
+	// Sets the 14th and 12th bits in the GPIOC_MODER register for general purpose mode.
+	GPIOC->MODER |= (1 << 14) | (1 << 12);
+
+	//Set the red LED on initially.
+	GPIOC->ODR |= (1 << 6);
 	
-	while (1) {
-		HAL_Delay(200); // Delay 200ms
-		// Toggle the output state of both PC8 and PC9
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
+	//Enable bit 1 to set PURDR1 to pull down mode.
+	GPIOA->PUPDR |= (1 << 1);
+	
+	//Initialize debouncer.
+	uint32_t debouncer = 0;
+	
+	//While Loop
+	while(1) {
+	debouncer = (debouncer << 1); // Always shift every loop iteration
+	
+	//Save the value of the push button then clear the rest of the bits.
+	uint32_t gpioval = GPIOA->IDR;
+	gpioval = gpioval << 31;
+	gpioval = gpioval >> 31;
+	
+	//If IDR value 1 is enabled enter the for loop as button is pressed.
+	if (gpioval) { // If input signal is set/high
+		debouncer |= 0x01; // Set lowest bit of bit-vector
+		}
+		if (debouncer == 0xFFFFFFFF) {
+		// This code triggers repeatedly when button is steady high!
+		}
+		if (debouncer == 0x00000000) {
+		// This code triggers repeatedly when button is steady low!
+		}
+		if (debouncer == 0x7FFFFFFF) {
+		// This code triggers only once when transitioning to steady high!
+		
+			//If the blue LED is on turn it off and turn on the red LED.
+			if(GPIOC->ODR >> 7 == 1) {
+				GPIOC->ODR &= ~(1 << 7);
+				GPIOC->ODR |= (1 << 6);
+			} else { //If the blue LED is off turn it on and turn off the red LED.
+				GPIOC->ODR &= ~(1 << 6);
+				GPIOC->ODR |= (1 << 7);
+			}
+		}
 	}
+	
+	
+	/* Code for blinking without button ---------------------------------------------------------*/
+	
+	//GPIOC->MODER |= (1 << 14) | (1 << 12);
+	//GPIOC->ODR |= (1 << 6);
+	
+	
+	//while (1) {
+		//HAL_Delay(500); // Delay 200ms
+		// Toggle the output state of both PC8 and PC9
+		
+		//if(GPIOC->ODR >> 7 == 1) {
+		//	GPIOC->ODR &= ~(1 << 7);
+		//	GPIOC->ODR |= (1 << 6);
+		//} else {
+		//	GPIOC->ODR &= ~(1 << 6);
+		//	GPIOC->ODR |= (1 << 7);
+		//}
+	//}
 }
 
 /**
