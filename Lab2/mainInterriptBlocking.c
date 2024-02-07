@@ -94,11 +94,12 @@ int main(void)
 	
 	//Enable interrupt on the NVIC.
 	NVIC_EnableIRQ(EXTI0_1_IRQn);
-	//Set for blocking
-//	NVIC_SetPriority(EXTI0_1_IRQn, 1);
+
+	//Set for blocking the systick as its default priority is 6
+	//NVIC_SetPriority(EXTI0_1_IRQn, 1);
 	
-	//
-	NVIC_SetPriority(SysTick_IRQn, 2);
+	//Set so that systick has a higher priority and isn't blocked by the long EXTI interrupt.
+	NVIC_SetPriority(SysTick_IRQn, 0);
 	NVIC_SetPriority(EXTI0_1_IRQn, 1);
 	
   while (1)

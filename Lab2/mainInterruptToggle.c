@@ -94,9 +94,6 @@ int main(void)
 	
 	//Enable interrupt on the NVIC.
 	NVIC_EnableIRQ(EXTI0_1_IRQn);
-	//NVIC_SetPriority(EXTI0_1_IRQn, 1);
-	
-	NVIC_SetPriority(SysTick_IRQn, 0);
 	NVIC_SetPriority(EXTI0_1_IRQn, 1);
 	
   while (1)
@@ -116,16 +113,6 @@ void EXTI0_1_IRQHandler(void)
 	{
 		//Toggle green and orange LEDs
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
-		
-		//Delay Loop
-//		uint32_t count = 0;
-//		while(count < 1500000) {
-//			count++;
-//		}
-		
-		
-		//Toggle green and orange LEDs
-//    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
 	
 		//Clear the Pending Register for EXTI0
     EXTI->PR = EXTI_PR_PR0;

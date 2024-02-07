@@ -95,9 +95,8 @@ int main(void)
 	//Enable interrupt on the NVIC.
 	NVIC_EnableIRQ(EXTI0_1_IRQn);
 	//Set for blocking
-//	NVIC_SetPriority(EXTI0_1_IRQn, 1);
+  //NVIC_SetPriority(EXTI0_1_IRQn, 1);
 	
-	//
 	NVIC_SetPriority(SysTick_IRQn, 2);
 	NVIC_SetPriority(EXTI0_1_IRQn, 1);
 	
