@@ -18,7 +18,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -85,10 +84,10 @@ int main(void)
   {
 		//USART_SingleChar('c');
 		    
-		char myString[] = "Hello, world!";
+		char myString[] = "Hello, world! ";
     USART_StringChar(myString);
 	
-		HAL_Delay(50000);
+		HAL_Delay(5000);
 		
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
   }
@@ -129,13 +128,13 @@ void USART_SingleChar(char charVal)
 
 void USART_StringChar(char *string)
 {
-	int length = strlen(string);
+	int i = 0;
 	
-	for(int i = 0; i < length; i++)
+	while(string[i] != '\0')
 	{
-	while(!(USART3->ISR & (1 << 7)));
-	
-	USART3->TDR = string[i];
+		while(!(USART3->ISR & (1 << 7)));
+		USART3->TDR = string[i];
+		i++;
 	}
 }
 
