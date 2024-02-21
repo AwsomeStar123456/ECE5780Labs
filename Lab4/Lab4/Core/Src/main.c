@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -49,6 +50,7 @@
 void SystemClock_Config(void);
 void GPIO_Init(void);
 void USART_SingleChar(char charVal);
+void USART_StringChar(char *string);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -81,9 +83,12 @@ int main(void)
 
   while (1)
   {
-		USART_SingleChar('c');
+		//USART_SingleChar('c');
+		    
+		char myString[] = "Hello, world!";
+    USART_StringChar(myString);
 	
-		HAL_Delay(500);
+		HAL_Delay(50000);
 		
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
   }
@@ -120,6 +125,18 @@ void USART_SingleChar(char charVal)
 	while(!(USART3->ISR & (1 << 7)));
 	
 	USART3->TDR = charVal;
+}
+
+void USART_StringChar(char *string)
+{
+	int length = strlen(string);
+	
+	for(int i = 0; i < length; i++)
+	{
+	while(!(USART3->ISR & (1 << 7)));
+	
+	USART3->TDR = string[i];
+	}
 }
 
 
