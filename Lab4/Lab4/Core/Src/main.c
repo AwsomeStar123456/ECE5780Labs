@@ -48,6 +48,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void GPIO_Init(void);
+void USART_Init(void);
 void USART_SingleChar(char charVal);
 void USART_StringChar(char *string);
 /* USER CODE BEGIN PFP */
@@ -67,32 +68,30 @@ int main(void)
 {
   HAL_Init();
 	GPIO_Init();
+	USART_Init();
 	
-	
-	__HAL_RCC_USART3_CLK_ENABLE();
-	
-	//Set Baud Rate
-	USART3->BRR = HAL_RCC_GetHCLKFreq() / 115200;
-	
-	//Enable Tx and Rx
-	USART3->CR1 |= ((1 << 3) | (1 << 2));
-	
-	//Enable the USART3
-	USART3->CR1 |= (1 << 0);
 
   while (1)
   {
+		//Single Character
 		//USART_SingleChar('c');
-		    
-		char myString[] = "Hello, world! ";
-    USART_StringChar(myString);
+		
+		//String
+		char string[] = "Hello, world!";
+    USART_StringChar(string);
 	
+		//5 Second Delay
 		HAL_Delay(5000);
 		
+		//LED toggle to ensure we aren't stuck anywhere.
 		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
   }
 }
 
+/**
+  * @brief  Initiates GPIO Pins
+  * @retval None
+  */
 void GPIO_Init(void)
 {
 	//Enable GPIOB and GPIOC Clock
@@ -118,24 +117,61 @@ void GPIO_Init(void)
 	return;
 }
 
-void USART_SingleChar(char charVal)
+/**
+  * @brief  Initiates the USART
+  * @retval None
+  */
+void USART_Init(void)
 {
+	//Enable the USART 3 CLK
+	//PB10 TX | PB11 RX
+	__HAL_RCC_USART3_CLK_ENABLE();
 	
-	while(!(USART3->ISR & (1 << 7)));
+	//Set Baud Rate
+	USART3->BRR = HAL_RCC_GetHCLKFreq() / 115200;
 	
-	USART3->TDR = charVal;
+	//Enable Tx and Rx
+	USART3->CR1 |= ((1 << 3) | (1 << 2));
+	
+	//Enable the USART3
+	USART3->CR1 |= (1 << 0);
+	
+	return;
 }
 
+/**
+  * @brief  Method for sending a character through a UART connection.
+  * @retval None
+  */
+void USART_SingleChar(char charVal)
+{
+	//Make sure TX data register is empty before writing to it.
+	while(!(USART3->ISR & (1 << 7)));
+	
+	//Write data to send.
+	USART3->TDR = charVal;
+	
+	return;
+}
+
+/**
+  * @brief  Method for sending a string through a UART connection.
+  * @retval None
+  */
 void USART_StringChar(char *string)
 {
 	int i = 0;
 	
+	//While we havent hit a termination character.
 	while(string[i] != '\0')
 	{
+		//Make sure TX data register is empty and then write to it.
 		while(!(USART3->ISR & (1 << 7)));
 		USART3->TDR = string[i];
 		i++;
 	}
+	
+	return;
 }
 
 
