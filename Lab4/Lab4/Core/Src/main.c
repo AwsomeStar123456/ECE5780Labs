@@ -51,6 +51,7 @@ void GPIO_Init(void);
 void USART_Init(void);
 void USART_SingleChar(char charVal);
 void USART_StringChar(char *string);
+char USART_ReadChar(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -79,12 +80,18 @@ int main(void)
 		//String
 		char string[] = "Hello, world!";
     USART_StringChar(string);
+		
+		//if(USART_ReadChar() == 'g')
+		//{
+		//	HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+		//}
+		
 	
 		//5 Second Delay
-		HAL_Delay(5000);
+		HAL_Delay(500);
 		
 		//LED toggle to ensure we aren't stuck anywhere.
-		HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+		//HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
   }
 }
 
@@ -124,6 +131,7 @@ void GPIO_Init(void)
 void USART_Init(void)
 {
 	//Enable the USART 3 CLK
+	//Baud Rate: 115200
 	//PB10 TX | PB11 RX
 	__HAL_RCC_USART3_CLK_ENABLE();
 	
@@ -165,13 +173,24 @@ void USART_StringChar(char *string)
 	//While we havent hit a termination character.
 	while(string[i] != '\0')
 	{
-		//Make sure TX data register is empty and then write to it.
-		while(!(USART3->ISR & (1 << 7)));
-		USART3->TDR = string[i];
+		USART_SingleChar(string[i]);
 		i++;
 	}
 	
 	return;
+}
+
+/**
+  * @brief  Waits for the read reg to not be empty and reads its value.
+  * @retval Value that was read from the USART.
+  */
+char USART_ReadChar(void)
+{
+	//Wait until the read register is not empty.
+	while(!(USART3->ISR & (1 << 5)));
+	
+	//Return value of return register.
+	return USART3->RDR;
 }
 
 
