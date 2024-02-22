@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"blockingproject\startup_stm32f072xb.o"
+"blockingproject\main.o"
+"blockingproject\stm32f0xx_it.o"
+"blockingproject\stm32f0xx_hal_msp.o"
+"blockingproject\stm32f0xx_hal_tim.o"
+"blockingproject\stm32f0xx_hal_tim_ex.o"
+"blockingproject\stm32f0xx_hal_rcc.o"
+"blockingproject\stm32f0xx_hal_rcc_ex.o"
+"blockingproject\stm32f0xx_hal.o"
+"blockingproject\stm32f0xx_hal_i2c.o"
+"blockingproject\stm32f0xx_hal_i2c_ex.o"
+"blockingproject\stm32f0xx_hal_gpio.o"
+"blockingproject\stm32f0xx_hal_dma.o"
+"blockingproject\stm32f0xx_hal_cortex.o"
+"blockingproject\stm32f0xx_hal_pwr.o"
+"blockingproject\stm32f0xx_hal_pwr_ex.o"
+"blockingproject\stm32f0xx_hal_flash.o"
+"blockingproject\stm32f0xx_hal_flash_ex.o"
+"blockingproject\stm32f0xx_hal_exti.o"
+"blockingproject\system_stm32f0xx.o"
+--strict --scatter "BlockingProject\BlockingProject.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "BlockingProject.map" -o BlockingProject\BlockingProject.axf
