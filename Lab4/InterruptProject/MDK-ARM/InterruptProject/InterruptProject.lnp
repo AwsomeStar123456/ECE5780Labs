@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"interruptproject\startup_stm32f072xb.o"
+"interruptproject\main.o"
+"interruptproject\stm32f0xx_it.o"
+"interruptproject\stm32f0xx_hal_msp.o"
+"interruptproject\stm32f0xx_hal_tim.o"
+"interruptproject\stm32f0xx_hal_tim_ex.o"
+"interruptproject\stm32f0xx_hal_rcc.o"
+"interruptproject\stm32f0xx_hal_rcc_ex.o"
+"interruptproject\stm32f0xx_hal.o"
+"interruptproject\stm32f0xx_hal_i2c.o"
+"interruptproject\stm32f0xx_hal_i2c_ex.o"
+"interruptproject\stm32f0xx_hal_gpio.o"
+"interruptproject\stm32f0xx_hal_dma.o"
+"interruptproject\stm32f0xx_hal_cortex.o"
+"interruptproject\stm32f0xx_hal_pwr.o"
+"interruptproject\stm32f0xx_hal_pwr_ex.o"
+"interruptproject\stm32f0xx_hal_flash.o"
+"interruptproject\stm32f0xx_hal_flash_ex.o"
+"interruptproject\stm32f0xx_hal_exti.o"
+"interruptproject\system_stm32f0xx.o"
+--strict --scatter "InterruptProject\InterruptProject.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "InterruptProject.map" -o InterruptProject\InterruptProject.axf
