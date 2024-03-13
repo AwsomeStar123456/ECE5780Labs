@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"whoami\startup_stm32f072xb.o"
+"whoami\main.o"
+"whoami\stm32f0xx_it.o"
+"whoami\stm32f0xx_hal_msp.o"
+"whoami\stm32f0xx_hal_tim.o"
+"whoami\stm32f0xx_hal_tim_ex.o"
+"whoami\stm32f0xx_hal_rcc.o"
+"whoami\stm32f0xx_hal_rcc_ex.o"
+"whoami\stm32f0xx_hal.o"
+"whoami\stm32f0xx_hal_i2c.o"
+"whoami\stm32f0xx_hal_i2c_ex.o"
+"whoami\stm32f0xx_hal_gpio.o"
+"whoami\stm32f0xx_hal_dma.o"
+"whoami\stm32f0xx_hal_cortex.o"
+"whoami\stm32f0xx_hal_pwr.o"
+"whoami\stm32f0xx_hal_pwr_ex.o"
+"whoami\stm32f0xx_hal_flash.o"
+"whoami\stm32f0xx_hal_flash_ex.o"
+"whoami\stm32f0xx_hal_exti.o"
+"whoami\system_stm32f0xx.o"
+--strict --scatter "WhoAmI\WhoAmI.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "WhoAmI.map" -o WhoAmI\WhoAmI.axf

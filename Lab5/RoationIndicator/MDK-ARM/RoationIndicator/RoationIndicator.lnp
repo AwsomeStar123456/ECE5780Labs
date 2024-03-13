@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"roationindicator\startup_stm32f072xb.o"
+"roationindicator\main.o"
+"roationindicator\stm32f0xx_it.o"
+"roationindicator\stm32f0xx_hal_msp.o"
+"roationindicator\stm32f0xx_hal_tim.o"
+"roationindicator\stm32f0xx_hal_tim_ex.o"
+"roationindicator\stm32f0xx_hal_rcc.o"
+"roationindicator\stm32f0xx_hal_rcc_ex.o"
+"roationindicator\stm32f0xx_hal.o"
+"roationindicator\stm32f0xx_hal_i2c.o"
+"roationindicator\stm32f0xx_hal_i2c_ex.o"
+"roationindicator\stm32f0xx_hal_gpio.o"
+"roationindicator\stm32f0xx_hal_dma.o"
+"roationindicator\stm32f0xx_hal_cortex.o"
+"roationindicator\stm32f0xx_hal_pwr.o"
+"roationindicator\stm32f0xx_hal_pwr_ex.o"
+"roationindicator\stm32f0xx_hal_flash.o"
+"roationindicator\stm32f0xx_hal_flash_ex.o"
+"roationindicator\stm32f0xx_hal_exti.o"
+"roationindicator\system_stm32f0xx.o"
+--strict --scatter "RoationIndicator\RoationIndicator.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "RoationIndicator.map" -o RoationIndicator\RoationIndicator.axf
