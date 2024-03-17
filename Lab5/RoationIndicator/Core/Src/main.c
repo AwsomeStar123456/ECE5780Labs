@@ -50,9 +50,12 @@ void SystemClock_Config(void);
 void GPIO_Init(void);
 void I2C_Init(void);
 void readsinglebyte(uint32_t reg);
-void readxy(void);
+void readx(void);
+void ready(void);
+void gyroInit(void);
+void gyroInit2(void);
 
-uint32_t xData, yData;
+int16_t xData, yData;
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -74,15 +77,56 @@ int main(void)
 	GPIO_Init();
 	I2C_Init();
 	
+	xData = 0;
+	yData = 0;
 	
-	//uint32_t RXData = I2C2->RXDR;
+	//Enable Gryo x and y & turn off sleep mode
+	gyroInit2();
+	gyroInit(); //uint32_t RXData = I2C2->RXDR;
+	
+  while (1)
+  {
+		readx();
+		ready();
+		
+		if(xData > 5000) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+		} else if(xData < -5000) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+		}
+		
+		if(yData > 5000) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+		} else if(yData < -5000) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+		}
+		
+		HAL_Delay(100);
+  }
+}
 
-	
-	//SET ADDRESS
+void readx(void) {
+	xData = 0;
+
+	//WRITE
 	//Set the slave address
 	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
 	//Set the # of bytes to 1
 	I2C2->CR2 |= (1 << 16);
+	//Enable a write
+	I2C2->CR2 &= ~(1 << 10);
 	//Enable the start bit
 	I2C2->CR2 |= (1 << 13);
 	
@@ -95,13 +139,14 @@ int main(void)
 		
 		if((I2C2->ISR & (1 << 4))) {
 			while(1) {
-				
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 			}
 		}
 	}
 	
 	//Set the transmit data
-	I2C2->TXDR = 0x20;
+	I2C2->TXDR = 0xA8;
 	
 	//Wait for the transmit complete flag
 	while(!(I2C2->ISR & (1 << 6)))
@@ -109,10 +154,84 @@ int main(void)
 		
 	}
 	
+	//READ
 	//Set the slave address
 	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
+	//Set the # of bytes to 2
+	I2C2->CR2 |= (1 << 17);
+	//Enable a read
+	I2C2->CR2 |= (1 << 10);
+	//Enable the start bit
+	I2C2->CR2 |= (1 << 13);
+	
+	//Wait for the RXNE Flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 2))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	xData |= I2C2->RXDR;
+	
+	//Wait for the RXNE Flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 2))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	xData |= ((I2C2->RXDR) << 8);
+	
+	//Wait for the transmit complete flag
+	while(!(I2C2->ISR & (1 << 6)))
+	{
+		
+	}
+	
+	//Send the stop bit
+	I2C2->CR2 |= (1 << 14);
+	
+	//Wait for the stop condition to be generated
+  while(I2C2->CR2 & (1 << 14))
+  {
+        
+  }
+
+  //Clear the stop bit
+  I2C2->CR2 &= ~(1 << 14);
+	
+}
+
+void ready(void) {
+	yData = 0;
+
+	//WRITE
+	//Set the slave address
+	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
 	//Set the # of bytes to 1
 	I2C2->CR2 |= (1 << 16);
+	//Enable a write
+	I2C2->CR2 &= ~(1 << 10);
 	//Enable the start bit
 	I2C2->CR2 |= (1 << 13);
 	
@@ -125,7 +244,178 @@ int main(void)
 		
 		if((I2C2->ISR & (1 << 4))) {
 			while(1) {
-				
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	//Set the transmit data
+	I2C2->TXDR = 0xAA;
+	
+	//Wait for the transmit complete flag
+	while(!(I2C2->ISR & (1 << 6)))
+	{
+		
+	}
+	
+	//READ
+	//Set the slave address
+	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
+	//Set the # of bytes to 2
+	I2C2->CR2 |= (1 << 17);
+	//Enable a read
+	I2C2->CR2 |= (1 << 10);
+	//Enable the start bit
+	I2C2->CR2 |= (1 << 13);
+	
+	//Wait for the RXNE Flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 2))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	yData |= I2C2->RXDR;
+	
+	//Wait for the RXNE Flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 2))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	yData |= ((I2C2->RXDR) << 8);
+	
+	//Wait for the transmit complete flag
+	while(!(I2C2->ISR & (1 << 6)))
+	{
+		
+	}
+	
+	//Send the stop bit
+	I2C2->CR2 |= (1 << 14);
+	
+	//Wait for the stop condition to be generated
+  while(I2C2->CR2 & (1 << 14))
+  {
+        
+  }
+
+  //Clear the stop bit
+  I2C2->CR2 &= ~(1 << 14);
+	
+}
+
+void gyroInit(void) {
+	//Set the slave address
+	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
+	//Set the # of bytes to 2
+	I2C2->CR2 |= (2 << 16);
+	//Enable a write
+	I2C2->CR2 &= ~(1 << 10);
+	//Enable the start bit
+	I2C2->CR2 |= (1 << 13);
+	
+	//Wait for the TXIS flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 1))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	//Set the transmit data
+	I2C2->TXDR = 0x20;
+	
+	//Wait for the TXIS flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 1))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+			}
+		}
+	}
+	
+	I2C2->TXDR = 0x0B;
+	
+	//Wait for the transmit complete flag
+	while(!(I2C2->ISR & (1 << 6)))
+	{
+		
+	}
+	
+	//Send the stop bit
+	I2C2->CR2 |= (1 << 14);
+	
+	//Wait for the stop condition to be generated
+  while(I2C2->CR2 & (1 << 14))
+  {
+        
+  }
+
+  //Clear the stop bit
+  I2C2->CR2 &= ~(1 << 14);
+	
+}
+
+void gyroInit2(void) {
+	//WRITE
+	//Set the slave address
+	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
+	//Set the # of bytes to 1
+	I2C2->CR2 |= (1 << 16);
+	//Enable a write
+	I2C2->CR2 &= ~(1 << 10);
+	//Enable the start bit
+	I2C2->CR2 |= (1 << 13);
+	
+	//Wait for the TXIS flag
+	while(1)
+	{
+		if((I2C2->ISR & (1 << 1))) {
+			break;
+		}
+		
+		if((I2C2->ISR & (1 << 4))) {
+			while(1) {
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 			}
 		}
 	}
@@ -139,90 +429,51 @@ int main(void)
 		
 	}
 	
-	I2C2->CR2 |= (1 << 14);
-	
-  while (1)
-  {
-		readxy();
-		
-		if(xData > 1) {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-		}
-		
-		HAL_Delay(100);
-  }
-}
-
-void readsinglebyte(uint32_t reg) {
-	//SET ADDRESS
-	//Set the slave address
+	//READ
 	I2C2->CR2 |= (0x69 << 1);
+	//Clear # of Bytes
+	I2C2->CR2 &= ~(0xFF << 16);
 	//Set the # of bytes to 1
 	I2C2->CR2 |= (1 << 16);
+	//Enable a read
+	I2C2->CR2 |= (1 << 10);
 	//Enable the start bit
 	I2C2->CR2 |= (1 << 13);
 	
 	//Wait for the TXIS flag
 	while(1)
 	{
-		if((I2C2->ISR & (1 << 1))) {
+		if((I2C2->ISR & (1 << 2))) {
 			break;
 		}
 		
 		if((I2C2->ISR & (1 << 4))) {
 			while(1) {
-				
+				//Enable red LED if there was an error
+				HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 			}
 		}
 	}
-	
-	//Set the transmit data
-	I2C2->TXDR = reg;
-	
-	//Wait for the transmit complete flag
-	while(!(I2C2->ISR & (1 << 6)))
-	{
-		
-	}
-	
-	//Set the slave address
-	I2C2->CR2 |= (0x69 << 1);
-	//Set the # of bytes to 1
-	I2C2->CR2 |= (1 << 16);
-	//Set the write bit
-	I2C2->CR2 |= (1 << 10);
-	//Enable the start bit
-	I2C2->CR2 |= (1 << 13);
-	
-	//Wait for the RXNE flag
-	while(!(I2C2->ISR & (1 << 2)))
-	{
-		
-	}
-	
-	//Wait for the transmit complete flag
-	while(!(I2C2->ISR & (1 << 6)))
-	{
-		
-	}
-	
-	I2C2->CR2 |= (1 << 14);
-}
 
-void readxy(void) {
-	readsinglebyte(0x29);
-	xData = (I2C2->RXDR) << 8;
+	uint32_t RXData = I2C2->RXDR;
 	
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+	//Wait for the transmit complete flag
+	while(!(I2C2->ISR & (1 << 6)))
+	{
+		
+	}
 	
-	readsinglebyte(0x28);
-	xData |= (I2C2->RXDR);
-	
-	
-	
-	
+	//Send the stop bit
+	I2C2->CR2 |= (1 << 14);
+
+	//Wait for the stop condition to be generated
+  while(I2C2->CR2 & (1 << 14))
+  {
+        
+  }
+
+  //Clear the stop bit
+  I2C2->CR2 &= ~(1 << 14);
 }
 
 /**

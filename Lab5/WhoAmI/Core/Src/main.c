@@ -130,15 +130,13 @@ int main(void)
 		
 	}
 	
-	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-	
 	uint32_t RXData = I2C2->RXDR;
 	RXData = RXData << 24;
 	RXData = RXData >> 24;
 	
 	//Check contents of the RXDR
 	if(RXData == 0xD3) {
-		//Enable BLUE LED
+		//Enable BLUE LED if reply was what we expected
 		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 	}
 	
