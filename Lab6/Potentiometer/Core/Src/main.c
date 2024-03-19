@@ -49,10 +49,30 @@
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void GPIO_Init(void);
+void ADC_Init(void);
+void DAC_Init(void);
 void USART_Init(void);
 void USART_SingleChar(char charVal);
 void USART_StringChar(char *string);
 /* USER CODE BEGIN PFP */
+
+// Sine Wave: 8-bit, 32 samples/cycle
+const uint8_t sine_table[32] = {127,151,175,197,216,232,244,251,254,251,244,
+232,216,197,175,151,127,102,78,56,37,21,9,2,0,2,9,21,37,56,78,102};
+// Triangle Wave: 8-bit, 32 samples/cycle
+const uint8_t triangle_table[32] = {0,15,31,47,63,79,95,111,127,142,158,174,
+190,206,222,238,254,238,222,206,190,174,158,142,127,111,95,79,63,47,31,15};
+// Sawtooth Wave: 8-bit, 32 samples/cycle
+const uint8_t sawtooth_table[32] = {0,7,15,23,31,39,47,55,63,71,79,87,95,103,
+111,119,127,134,142,150,158,166,174,182,190,198,206,214,222,230,238,246};
+// Square Wave: 8-bit, 32 samples/cycle
+const uint8_t square_table[32] = {254,254,254,254,254,254,254,254,254,254,
+254,254,254,254,254,254,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+
+
+uint32_t currentIndex = 0;
+
 
 /* USER CODE END PFP */
 
@@ -72,12 +92,63 @@ int main(void)
 	SystemClock_Config();
 	
 	GPIO_Init();
-	USART_Init();
-	
+	//USART_Init();
+	ADC_Init();
+	DAC_Init();
+
+  while (1)
+  {
+		
+		//ADC
+		
+		uint8_t ADCData = (ADC1->DR & 0xFF);
+		
+		if(ADCData > 51) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+		}
+		
+		if(ADCData > 102) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+		}
+		
+		if(ADCData > 153) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+		}
+		
+		if(ADCData > 204) {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+		} else {
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+		}
+		
+		//DAC
+		
+		//Set the current table index in the DAC and increment index
+		DAC1->DHR8R1 = square_table[currentIndex];
+		currentIndex++;
+		
+		if(currentIndex > 31) {
+			currentIndex = 0;
+		}
+		
+		HAL_Delay(1);
+  }
+}
+
+/**
+  * @brief  Initiates the ADC
+  * @retval None
+  */
+void ADC_Init(void)
+{
 	//Enable the ADC1 in the RCC
 	__HAL_RCC_ADC1_CLK_ENABLE();
-	
-	USART_StringChar("USART Initiated");
 
 	//**Right Align Default
 	//**External Trigger Disabled Default
@@ -110,36 +181,23 @@ int main(void)
 	
 	//Start the ADC
 	ADC1->CR |= (1 << 2);
+}
 
-
-  while (1)
-  {
-		uint8_t ADCData = (ADC1->DR & 0xFF);
-		
-		if(ADCData > 51) {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-		}
-		
-		if(ADCData > 102) {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
-		}
-		
-		if(ADCData > 153) {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-		}
-		
-		if(ADCData > 204) {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
-		} else {
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-		}
-  }
+/**
+  * @brief  Initiates the DAC
+  * @retval None
+  */
+void DAC_Init(void)
+{
+	//Pin PA4 **DAC_OUT1
+	//Enable the DAC in the RCC
+	__HAL_RCC_DAC1_CLK_ENABLE();
+	
+	//Enable Software Trigger for Channel 1
+	DAC1->CR |= ((1 << 5) | (1 << 4) | (1 << 3));
+	
+	//Enable Channel 1
+	DAC1->CR |= (1 << 0);
 }
 
 /**
@@ -156,6 +214,10 @@ void GPIO_Init(void)
 	//Enable ADC Input Pin PC4 **ADC_IN1
 	GPIO_InitTypeDef adcTypeDef = {GPIO_PIN_4, GPIO_MODE_ANALOG, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
 	HAL_GPIO_Init(GPIOC, &adcTypeDef);
+	
+	//Enable DAC Output Pin PA4 **DAC_OUT1
+	GPIO_InitTypeDef dacTypeDef = {GPIO_PIN_4, GPIO_MODE_ANALOG, GPIO_SPEED_FREQ_LOW, GPIO_NOPULL};
+	HAL_GPIO_Init(GPIOA, &dacTypeDef);
 	
 	//Enable LED Pins
 	GPIO_InitTypeDef ledTypeDef = {GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9,
@@ -192,12 +254,13 @@ void USART_Init(void)
 	//Enable the USART3
 	USART3->CR1 |= (1 << 0);
 	
+	USART_StringChar("USART Initiated");
+	
 	//Code for debugging the ADC Values via USART
 	//char adcDataStr[4]; // Array to hold the string. Size depends on the maximum possible value of ADCData.
 	//sprintf(adcDataStr, "%d", ADCData); // Convert ADCData to string.
 	//USART_StringChar("ADCDATA: ");
 	//USART_StringChar(adcDataStr);
-	//HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_SET);
 	
 	return;
 }
