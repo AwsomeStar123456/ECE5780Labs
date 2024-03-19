@@ -1,0 +1,25 @@
+--cpu Cortex-M0
+"potentiometer\startup_stm32f072xb.o"
+"potentiometer\main.o"
+"potentiometer\stm32f0xx_it.o"
+"potentiometer\stm32f0xx_hal_msp.o"
+"potentiometer\stm32f0xx_hal_tim.o"
+"potentiometer\stm32f0xx_hal_tim_ex.o"
+"potentiometer\stm32f0xx_hal_rcc.o"
+"potentiometer\stm32f0xx_hal_rcc_ex.o"
+"potentiometer\stm32f0xx_hal.o"
+"potentiometer\stm32f0xx_hal_i2c.o"
+"potentiometer\stm32f0xx_hal_i2c_ex.o"
+"potentiometer\stm32f0xx_hal_gpio.o"
+"potentiometer\stm32f0xx_hal_dma.o"
+"potentiometer\stm32f0xx_hal_cortex.o"
+"potentiometer\stm32f0xx_hal_pwr.o"
+"potentiometer\stm32f0xx_hal_pwr_ex.o"
+"potentiometer\stm32f0xx_hal_flash.o"
+"potentiometer\stm32f0xx_hal_flash_ex.o"
+"potentiometer\stm32f0xx_hal_exti.o"
+"potentiometer\system_stm32f0xx.o"
+--strict --scatter "Potentiometer\Potentiometer.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "Potentiometer.map" -o Potentiometer\Potentiometer.axf
