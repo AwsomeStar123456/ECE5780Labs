@@ -130,7 +130,7 @@ int main(void)
 		//DAC
 		
 		//Set the current table index in the DAC and increment index
-		DAC1->DHR8R1 = square_table[currentIndex];
+		DAC1->DHR8R1 = sawtooth_table[currentIndex];
 		currentIndex++;
 		
 		if(currentIndex > 31) {
