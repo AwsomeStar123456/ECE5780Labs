@@ -1874,9 +1874,9 @@
       </Doc>
       <Doc>
         <Name>..\Core\Src\motor.c</Name>
-        <ColumnNumber>84</ColumnNumber>
-        <TopLine>183</TopLine>
-        <CurrentLine>193</CurrentLine>
+        <ColumnNumber>0</ColumnNumber>
+        <TopLine>49</TopLine>
+        <CurrentLine>57</CurrentLine>
         <Folding>1</Folding>
         <ContractedFolders></ContractedFolders>
         <PaneID>0</PaneID>
