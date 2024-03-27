@@ -141,79 +141,26 @@ void ADC_init(void) {
 
 void PI_update(void) {
     
-    /* Run PI control loop
-     *
-     * Make sure to use the indicated variable names. This allows STMStudio to monitor
-     * the condition of the system!
-     *
-     * target_rpm -> target motor speed in RPM
-     * motor_speed -> raw motor speed in encoder counts
-     * error -> error signal (difference between measured speed and target)
-     * error_integral -> integrated error signal
-     * Kp -> Proportional Gain
-     * Ki -> Integral Gain
-     * output -> raw output signal from PI controller
-     * duty_cycle -> used to report the duty cycle of the system 
-     * adc_value -> raw ADC counts to report current
-     *
-     */
-    
-	
-	
+		//Calculate the proportional error.
 		error = (target_rpm*2 - motor_speed);
-	
-    /// TODO: calculate error signal and write to "error" variable
-    
-    /* Hint: Remember that your calculated motor speed may not be directly in RPM!
-     *       You will need to convert the target or encoder speeds to the same units.
-     *       I recommend converting to whatever units result in larger values, gives
-     *       more resolution.
-     */
-    
+			
+		//Calculate the integral of the error.
     error_integral = error_integral + (Ki * error);
 		
+		//Clamp the integral from 0 to 3200 so that it doesn't get to large.
 		if(error_integral > 3200) error_integral = 3200;
 		else if(error_integral < 0) error_integral = 0;
 		
-    /// TODO: Calculate integral portion of PI controller, write to "error_integral" variable
+		//Calcuate the proportional error with the gain and add the integral error.
+    int16_t output = (Kp * error + error_integral) >> 5;
     
-    /// TODO: Clamp the value of the integral to a limited positive range
-    
-    /* Hint: The value clamp is needed to prevent excessive "windup" in the integral.
-     *       You'll read more about this for the post-lab. The exact value is arbitrary
-     *       but affects the PI tuning.
-     *       Recommend that you clamp between 0 and 3200 (what is used in the lab solution)
-     */
-		
-    /// TODO: Calculate proportional portion, add integral and write to "output" variable
-		
-    int16_t output = (Kp * error + error_integral) >> 5; // Change this!
-    
-    /* Because the calculated values for the PI controller are significantly larger than 
-     * the allowable range for duty cycle, you'll need to divide the result down into 
-     * an appropriate range. (Maximum integral clamp / X = 100% duty cycle)
-     * 
-     * Hint: If you chose 3200 for the integral clamp you should divide by 32 (right shift by 5 bits), 
-     *       this will give you an output of 100 at maximum integral "windup".
-     *
-     * This division also turns the above calculations into pseudo fixed-point. This is because
-     * the lowest 5 bits act as if they were below the decimal point until the division where they
-     * were truncated off to result in an integer value. 
-     *
-     * Technically most of this is arbitrary, in a real system you would want to use a fixed-point
-     * math library. The main difference that these values make is the difference in the gain values
-     * required for tuning.
-     */
-
-     /// TODO: Divide the output into the proper range for output adjustment
-     
-     /// TODO: Clamp the output value between 0 and 100 
-		 if(output > 100) output = 100;
-		 if(output < 0) output = 0;
+		//Clamp the output to be between 100 and 0.
+		if(output > 100) output = 100;
+		if(output < 0) output = 0;
     
     pwm_setDutyCycle(output);
-    duty_cycle = output;            // For debug viewing
-
+    duty_cycle = output;
+	
     // Read the ADC value for current monitoring, actual conversion into meaningful units 
     // will be performed by STMStudio
     if(ADC1->ISR & ADC_ISR_EOC) {   // If the ADC has new data for us
